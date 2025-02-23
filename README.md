@@ -1,6 +1,4 @@
-Below is a README.md file tailored for your Streamlit app, "GenBI." It includes an overview, features, installation instructions, usage details, and other relevant information based on the provided code.
 
-```markdown
 # GenBI - Generative Business Intelligence
 
 **GenBI** is an interactive Streamlit application designed to simplify data analysis and visualization. It leverages generative AI capabilities to allow users to upload datasets, ask natural language questions, and receive insights in the form of tables, visualizations, or textual answers. Powered by pandas, LangChain, OpenAI's GPT-4o model, and Plotly, GenBI makes data exploration accessible to both technical and non-technical users.
