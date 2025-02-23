@@ -101,7 +101,7 @@ genbi/
 ├── utils/
 │   ├── data_processor.py     # Dataframe processing utilities
 │   └── openai_helpers.py     # OpenAI API helpers
-├── app.py                    # Main Streamlit application
+├── main.py                    # Main Streamlit application
 ├── requirements.txt          # Dependencies
 └── README.md                 # This file
 ```
