@@ -1,2 +1,4 @@
 .env
 .env
+agents/__pycache__
+utils/__pycache__
