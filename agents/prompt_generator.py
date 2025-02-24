@@ -39,7 +39,7 @@ def generate_data_manipulation_prompt(query: str, df: pd.DataFrame) -> str:
         {columns_info}
 
         Sample data (first 3 rows):
-        {df.to_string()}
+        {df.head().to_string()}
 
         Generate valid Python code to prepare this data for the requested visualization.
         For a bar graph of house prices, ensure to handle the 'House Price' column properly.
