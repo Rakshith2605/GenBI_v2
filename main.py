@@ -18,6 +18,8 @@ def initialize_session_state():
         st.session_state.df = None
     if 'llm' not in st.session_state:
         st.session_state.llm = ChatOpenAI(temperature=0, model="gpt-4o")
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
 
 def load_data(uploaded_file):
     """
@@ -36,7 +38,6 @@ def load_data(uploaded_file):
             st.error(f"Unsupported file format: {file_extension}")
             return None
 
-        # Convert all numeric columns that might be strings
         for col in df.columns:
             try:
                 df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', ''), errors='ignore')
@@ -58,10 +59,44 @@ def upload_file():
         return load_data(uploaded_file)
     return None
 
+def process_query(user_query):
+    with st.spinner("Analyzing your question..."):
+        query_type = classify_query(user_query)
+        try:
+            if query_type == "plot":
+                manipulation_prompt = generate_data_manipulation_prompt(user_query, st.session_state.df)
+                processed_df = process_dataframe(manipulation_prompt, st.session_state.df)
+                fig = create_visualization(processed_df, user_query)
+                return {"type": "plot", "content": fig}
+
+            elif query_type == "table":
+                agent = create_pandas_dataframe_agent(
+                    st.session_state.llm,
+                    st.session_state.df,
+                    verbose=True,
+                    allow_dangerous_code=True
+                )
+                result = agent.run(user_query)
+                return {"type": "text", "content": result}
+
+            else:  # answer
+                agent = create_pandas_dataframe_agent(
+                    st.session_state.llm,
+                    st.session_state.df,
+                    verbose=True,
+                    allow_dangerous_code=True
+                )
+                answer = agent.run(user_query)
+                return {"type": "text", "content": answer}
+
+        except Exception as e:
+            return {"type": "error", "content": f"An error occurred: {str(e)}"}
+
 def main():
     st.title("🤖 GenBI")
     initialize_session_state()
 
+    # Sidebar
     with st.sidebar:
         st.header("Upload Data")
         df = upload_file()
@@ -72,58 +107,33 @@ def main():
             st.dataframe(df)
             st.write(f"Total rows: {len(df)}")
             st.write(f"Columns: {', '.join(df.columns)}")
-            #st.session_state.df = df
 
+    # Main chat interface
     if st.session_state.df is not None:
-        st.header("Ask Questions About Your Data")
-        user_query = st.text_input(
-            "Enter your question:", 
-            placeholder="e.g., 'Show me a bar plot of sales by category' or 'What is the average age?'"
-        )
+        # Display chat history
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                if message["type"] == "plot":
+                    st.plotly_chart(message["content"])
+                else:
+                    st.write(message["content"])
 
-        if user_query:
-            with st.spinner("Analyzing your question..."):
-                # Classify the query type
-                query_type = classify_query(user_query)
+        # Chat input
+        if prompt := st.chat_input("Ask questions about your data..."):
+            # Display user message
+            with st.chat_message("user"):
+                st.write(prompt)
+            st.session_state.messages.append({"role": "user", "type": "text", "content": prompt})
 
-                try:
-                    if query_type == "plot":
-                        # Generate data manipulation prompt
-                        manipulation_prompt = generate_data_manipulation_prompt(user_query, st.session_state.df)
-                        #st.write(manipulation_prompt)
-                        # Process the dataframe
-                        json_input = json.dumps(manipulation_prompt)
-                        #st.write(json_input)
-                        #st.code(json_input, language='python')
+            # Process and display response
+            response = process_query(prompt)
+            with st.chat_message("assistant"):
+                if response["type"] == "plot":
+                    st.plotly_chart(response["content"])
+                else:
+                    st.write(response["content"])
+            st.session_state.messages.append({"role": "assistant", **response})
 
-                        processed_df = process_dataframe(manipulation_prompt, st.session_state.df)
-                        #st.write(processed_df)
-                        # Create visualization
-                        fig = create_visualization(processed_df, user_query)
-                        st.plotly_chart(fig)
-
-                    elif query_type == "table":
-                        agent = create_pandas_dataframe_agent(
-                            st.session_state.llm,
-                            st.session_state.df,
-                            verbose=True,
-                            allow_dangerous_code=True
-                        )
-                        result = agent.run(user_query)
-                        st.write(result)
-
-                    else:  # answer
-                        agent = create_pandas_dataframe_agent(
-                            st.session_state.llm,
-                            st.session_state.df,
-                            verbose=True,
-                            allow_dangerous_code=True
-                        )
-                        answer = agent.run(user_query)
-                        st.success(answer)
-
-                except Exception as e:
-                    st.error(f"An error occurred: {str(e)}")
     else:
         st.info("👈 Please upload a dataset file (CSV, Excel, or JSON) to begin analysis.")
 
