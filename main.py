@@ -97,7 +97,7 @@ def main():
                         #st.code(json_input, language='python')
 
                         processed_df = process_dataframe(manipulation_prompt, st.session_state.df)
-                        st.write(processed_df)
+                        #st.write(processed_df)
                         # Create visualization
                         fig = create_visualization(processed_df, user_query)
                         st.plotly_chart(fig)
