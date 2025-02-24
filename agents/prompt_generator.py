@@ -33,34 +33,16 @@ def generate_data_manipulation_prompt(query: str, df: pd.DataFrame) -> str:
         "role": "user",
         "content": f"""
         Query: {query}
-    
+
         DataFrame Information:
-        1. Columns and Data Types:
+        Columns and their types:
         {columns_info}
-    
-        2. Sample Data (first 3 rows):
+
+        Sample data (first 3 rows):
         {df.head(3).to_string()}
-    
-        3. Data Statistics:
-        - Total Rows: {len(df)}
-        - Missing Values: {df.isnull().sum().to_dict()}
-        
-        Requirements:
-        1. Generate Python code using plotly for the requested visualization
-        2. Handle data preparation including:
-            - Missing value treatment
-            - Proper data type conversions
-            - Necessary aggregations
-            - Data sorting if needed
-        3. Include appropriate:
-            - Chart title
-            - Axis labels
-            - Color schemes
-            - Legend (if applicable)
-            - Interactive features
-        4. Return a plotly figure object
-        
-        Note: Ensure the code handles numeric columns properly and includes error handling for data type conversions.
+
+        Generate valid Python code to prepare this data for the requested visualization.
+        For a bar graph of house prices, ensure to handle the 'House Price' column properly.
         """
     }
 
