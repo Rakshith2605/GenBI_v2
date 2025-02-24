@@ -67,11 +67,12 @@ def main():
         df = upload_file()
 
         if df is not None:
+            st.session_state.df = df
             st.write("Data Preview:")
-            st.dataframe(df.head(3))
+            st.dataframe(df)
             st.write(f"Total rows: {len(df)}")
             st.write(f"Columns: {', '.join(df.columns)}")
-            st.session_state.df = df
+            #st.session_state.df = df
 
     if st.session_state.df is not None:
         st.header("Ask Questions About Your Data")
@@ -89,10 +90,14 @@ def main():
                     if query_type == "plot":
                         # Generate data manipulation prompt
                         manipulation_prompt = generate_data_manipulation_prompt(user_query, st.session_state.df)
-
+                        #st.write(manipulation_prompt)
                         # Process the dataframe
-                        processed_df = process_dataframe(manipulation_prompt, st.session_state.df)
+                        json_input = json.dumps(manipulation_prompt)
+                        #st.write(json_input)
+                        #st.code(json_input, language='python')
 
+                        processed_df = process_dataframe(manipulation_prompt, st.session_state.df)
+                        st.write(processed_df)
                         # Create visualization
                         fig = create_visualization(processed_df, user_query)
                         st.plotly_chart(fig)
