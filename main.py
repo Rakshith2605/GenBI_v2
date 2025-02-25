@@ -4,8 +4,7 @@ from langchain_experimental.agents import create_pandas_dataframe_agent
 from langchain_community.chat_models import ChatOpenAI
 import plotly.express as px
 import json
-from pandasai import SmartDataframe
-from pandasai.llm import OpenAI
+
 from agents.classifier import classify_query
 from agents.prompt_generator import generate_data_manipulation_prompt
 from agents.visualization import create_visualization
@@ -13,7 +12,6 @@ from utils.data_processor import process_dataframe
 from utils.openai_helpers import get_openai_response
 
 st.set_page_config(page_title="GenBI", layout="wide")
-
 
 def initialize_session_state():
     if 'df' not in st.session_state:
@@ -72,10 +70,13 @@ def process_query(user_query):
                 return {"type": "plot", "content": fig}
 
             elif query_type == "table":
-                sdf = SmartDataframe(st.session_state.df, config={"llm": st.session_state.llm})
-                result = sdf.chat(user_query)
-                
-                #result = agent.run(user_query)
+                agent = create_pandas_dataframe_agent(
+                    st.session_state.llm,
+                    st.session_state.df,
+                    verbose=True,
+                    allow_dangerous_code=True
+                )
+                result = agent.run(user_query)
                 return {"type": "text", "content": result}
 
             else:  # answer
