@@ -10,6 +10,7 @@ from agents.prompt_generator import generate_data_manipulation_prompt
 from agents.visualization import create_visualization
 from utils.data_processor import process_dataframe
 from utils.openai_helpers import get_openai_response
+from agents.table_generator import get_df
 
 st.set_page_config(page_title="GenBI", layout="wide")
 
@@ -70,13 +71,8 @@ def process_query(user_query):
                 return {"type": "plot", "content": fig}
 
             elif query_type == "table":
-                agent = create_pandas_dataframe_agent(
-                    st.session_state.llm,
-                    st.session_state.df,
-                    verbose=True,
-                    allow_dangerous_code=True
-                )
-                result = agent.run(user_query)
+                #result = agent.run(user_query)
+                result = get_df(st.session_state.df, user_query)
                 return {"type": "text", "content": result}
 
             else:  # answer
