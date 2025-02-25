@@ -1,49 +1,34 @@
 import pandas as pd
 
-def process_dataframe(manipulation_code: str, df: pd.DataFrame, numeric_columns: list = None) -> pd.DataFrame:
+def process_dataframe(manipulation_code: str, df: pd.DataFrame) -> pd.DataFrame:
     """
-    Process and manipulate a DataFrame with flexible column handling.
-    
-    Parameters:
-    - manipulation_code: String containing pandas manipulation code
-    - df: Input pandas DataFrame
-    - numeric_columns: Optional list of column names to treat as numeric
-    
-    Returns:
-    - Processed pandas DataFrame
+    Executes the generated data manipulation code on the dataframe
     """
     try:
         # Create a copy of the dataframe to avoid modifying the original
         df_copy = df.copy()
 
-        # If numeric_columns not specified, try to auto-detect numeric columns
-        if numeric_columns is None:
-            numeric_columns = df_copy.select_dtypes(include=['int64', 'float64', 'int32']).columns.tolist()
+        # Ensure 'House Price' column is numeric
+        if 'House Price' in df_copy.columns:
+            try:
+                df_copy['House Price'] = pd.to_numeric(df_copy['House Price'].str.replace(',', ''), errors='coerce')
+            except Exception as e:
+                print(f"Error converting House Price to numeric: {str(e)}")
 
-        # Convert specified or detected numeric columns to proper numeric type
+        # Ensure other numeric columns are properly typed
         for col in df_copy.columns:
-            if col in numeric_columns:
+            if col != 'House Price' and df_copy[col].dtype == object:
                 try:
-                    # Handle various numeric formats (remove commas, dollar signs, etc.)
-                    df_copy[col] = pd.to_numeric(
-                        df_copy[col].astype(str)
-                        .str.replace(r'[\$,]', '', regex=True),
-                        errors='coerce'
-                    )
+                    # Remove commas and convert to numeric
+                    df_copy[col] = pd.to_numeric(df_copy[col].astype(str).str.replace(',', ''), errors='coerce')
                 except Exception as e:
                     print(f"Error converting column {col} to numeric: {str(e)}")
-            # For non-numeric columns, keep original data type but clean if needed
-            elif df_copy[col].dtype == object:
-                try:
-                    # Remove leading/trailing whitespace from string columns
-                    df_copy[col] = df_copy[col].str.strip()
-                except Exception:
-                    pass  # Skip if column can't be stripped
 
-        # Optional: Drop rows with all NaN values (can be customized)
-        df_copy = df_copy.dropna(how='all')
+        # Drop rows with NaN in House Price if it exists
+        if 'House Price' in df_copy.columns:
+            df_copy = df_copy.dropna(subset=['House Price'])
 
-        # Create local namespace with necessary variables
+        # Create local namespace with only necessary variables
         local_vars = {"df": df_copy, "pd": pd}
 
         # If no manipulation code provided, return the cleaned dataframe
@@ -56,16 +41,16 @@ def process_dataframe(manipulation_code: str, df: pd.DataFrame, numeric_columns:
         except Exception as e:
             print(f"Error executing manipulation code: {str(e)}")
             print(f"Code attempted: {manipulation_code}")
+            # Return the cleaned dataframe if manipulation fails
             return df_copy
 
-        # Get the processed dataframe from local namespace
+        # The manipulation code should modify 'df' in the local namespace
         processed_df = local_vars.get('df')
 
-        if processed_df is None or not isinstance(processed_df, pd.DataFrame):
-            print("Warning: Manipulation code did not produce a valid DataFrame")
+        if processed_df is None:
+            print("Warning: Manipulation code did not produce a valid dataframe")
             return df_copy
 
         return processed_df
-
     except Exception as e:
-        raise Exception(f"Error processing DataFrame: {str(e)}\nCode attempted: {manipulation_code}")
+        raise Exception(f"Error processing dataframe: {str(e)}\nCode attempted: {manipulation_code}")
