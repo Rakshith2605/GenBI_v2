@@ -11,6 +11,7 @@ from agents.visualization import create_visualization
 from utils.data_processor import process_dataframe
 from utils.openai_helpers import get_openai_response
 from agents.table_generator import get_df
+from agents.responce_generator import generate_responce
 
 st.set_page_config(page_title="GenBI", layout="wide")
 
@@ -18,7 +19,7 @@ def initialize_session_state():
     if 'df' not in st.session_state:
         st.session_state.df = None
     if 'llm' not in st.session_state:
-        st.session_state.llm = ChatOpenAI(temperature=0, model="gpt-4o")
+        st.session_state.llm = ChatOpenAI(temperature=1, model="gpt-4o")
     if 'messages' not in st.session_state:
         st.session_state.messages = []
 
@@ -76,13 +77,7 @@ def process_query(user_query):
                 return {"type": "text", "content": result}
 
             else:  # answer
-                agent = create_pandas_dataframe_agent(
-                    st.session_state.llm,
-                    st.session_state.df,
-                    verbose=True,
-                    allow_dangerous_code=True
-                )
-                answer = agent.run(user_query)
+                answer = generate_responce(st.session_state.df,user_query)
                 return {"type": "text", "content": answer}
 
         except Exception as e:
