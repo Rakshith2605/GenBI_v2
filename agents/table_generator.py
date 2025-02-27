@@ -7,11 +7,11 @@ from pathlib import Path
 
 
 
-root_dir = Path(__file__).parent.parent
-load_dotenv(root_dir / '.env')
-api_key=os.getenv("OPENAI_API_KEY")
+#root_dir = Path(__file__).parent.parent
+#load_dotenv(root_dir / '.env')
+#api_key=os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(
-    api_key=api_key,
+    #api_key=api_key,
     temperature=0,
     model_name="gpt-4"
 )
