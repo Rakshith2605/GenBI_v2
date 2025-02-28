@@ -29,7 +29,9 @@ def initialize_session_state():
 
 def setup_api_key():
     api_key = st.sidebar.text_input("Enter your OpenAI API key", type="password", key="api_key_input")
-    
+    st.markdown("""
+    <span style="color:red;">**Disclaimer:**</span> We do not save your API keys. If you do not have an API key, you can obtain one by visiting [OpenAI's API page](https://platform.openai.com/signup).
+    """, unsafe_allow_html=True)
     if api_key and api_key != st.session_state.api_key:
         with st.sidebar:
             with st.spinner("Validating API key..."):
