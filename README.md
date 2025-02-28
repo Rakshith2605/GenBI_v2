@@ -47,18 +47,7 @@
    OPENAI_API_KEY=your-openai-api-key
    ```
 
-4. **Requirements File**:
-   Ensure your `requirements.txt` includes:
-   ```plaintext
-   streamlit==1.31.0
-   pandas==2.2.0
-   langchain-experimental==0.0.49
-   langchain-community==0.0.16
-   openai==1.10.0
-   plotly==5.18.0
-   ```
 
----
 
 ## Usage
 
