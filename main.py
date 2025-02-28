@@ -168,7 +168,7 @@ def main():
             st.session_state.messages.append({"role": "assistant", **response})
 
     else:
-        st.info("👈 Please upload a dataset file (CSV, Excel, or JSON) to begin analysis.")
+        st.info("Please upload a dataset file (CSV, Excel, or JSON) in sidebar to begin analysis.")
 
 if __name__ == "__main__":
     main()
